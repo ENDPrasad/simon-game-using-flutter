@@ -23,6 +23,7 @@ class _GameScreenState extends State<GameScreen> {
   bool isgreenClicked = false;
   bool isyellowClicked = false;
   bool isbuttonClicked = false;
+  bool isGameOver = false;
 
   @override
   void initState() {
@@ -85,6 +86,22 @@ class _GameScreenState extends State<GameScreen> {
     return null;
   }
 
+  void gameOver() async {
+    setState(() {
+      isGameOver = !isGameOver;
+      level = 0;
+      userClicks = [];
+      gameFlow = [];
+    });
+    await player.setAsset('assets/wrong.mp3');
+    player.play();
+    // clearing everything
+    Future.delayed(Duration(seconds: 1));
+    setState(() {
+      isGameOver = !isGameOver;
+    });
+  }
+
   // This function checks user clicks
   Future<Function> checkUserClicks() async {
     // Checking whether both lengths are equal or not
@@ -103,27 +120,14 @@ class _GameScreenState extends State<GameScreen> {
       }
       // If user clicks are not equal to game flow then it means game over
       else {
-        await player.setAsset('assets/wrong.mp3');
-        player.play();
-        // clearing everything
-        setState(() {
-          level = 0;
-          userClicks = [];
-          gameFlow = [];
-        });
+        gameOver();
       }
     }
     // If user clicks are less than game flow then it means the user is not yet done clicking.
     // So we need to check each and every time when user clicks whether he/she is on the right track or not.
     else {
       if (!compare(userClicks, gameFlow)) {
-        await player.setAsset('assets/wrong.mp3');
-        player.play();
-        setState(() {
-          level = 0;
-          userClicks = [];
-          gameFlow = [];
-        });
+        gameOver();
       }
     }
     return null;
@@ -175,6 +179,8 @@ class _GameScreenState extends State<GameScreen> {
               ),
               // Four coloured tiles
               Container(
+                decoration: BoxDecoration(
+                    boxShadow: isGameOver ? [boxShadowForGameOver] : []),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
